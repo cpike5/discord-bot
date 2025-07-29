@@ -1,3 +1,5 @@
+using Serilog;
+
 namespace DiscordBotAPI
 {
     public class Program
@@ -7,6 +9,12 @@ namespace DiscordBotAPI
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddSerilog(logger =>
+            {
+                logger.ReadFrom.Configuration(builder.Configuration)
+                      .Enrich.FromLogContext()
+                      .WriteTo.Console();
+            });
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
