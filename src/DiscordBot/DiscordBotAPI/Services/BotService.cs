@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using DiscordBotAPI.Commands;
 using DiscordBotAPI.Configuration;
 using DiscordBotAPI.Exceptions;
 using Microsoft.Extensions.Options;
@@ -77,6 +78,20 @@ namespace DiscordBotAPI.Services
         private async Task Client_Ready()
         {
             _logger.LogDebug("Client is ready and connected to Discord.");
+
+            // Register global commands
+            using var scope = _services.CreateScope();
+            var commandRegistrationService = scope.ServiceProvider.GetRequiredService<ICommandRegistrationService>() ?? throw new MissingServiceException(nameof(ICommandRegistrationService));
+            await commandRegistrationService.RegisterCommandsAsync();
+
+            // Register the command handler
+            _discordClient.SlashCommandExecuted += async (command) =>
+            {
+                var commandScope = _services.CreateScope();
+                var commandHandlerService = commandScope.ServiceProvider.GetRequiredService<CommandHandlerService>() ?? throw new MissingServiceException(nameof(CommandHandlerService));
+                await commandHandlerService.HandleSlashCommandExecutedAsync(command);
+            };
+
             await Task.CompletedTask;
         }
 

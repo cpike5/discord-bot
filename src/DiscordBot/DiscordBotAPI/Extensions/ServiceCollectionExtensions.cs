@@ -1,5 +1,7 @@
 ﻿using Discord;
+using Discord.Interactions;
 using Discord.WebSocket;
+using DiscordBotAPI.Commands;
 using DiscordBotAPI.Configuration;
 using DiscordBotAPI.Services;
 
@@ -41,6 +43,21 @@ namespace DiscordBotAPI.Extensions
 
             // Register the logger
             services.AddScoped<IDiscordBotLoggerService, DiscordBotLoggerService>();
+
+            // Rester the interaction service
+            services.AddSingleton<InteractionService>(provider =>
+            {
+                var discordClient = provider.GetRequiredService<DiscordSocketClient>();
+                return new InteractionService(discordClient, new InteractionServiceConfig
+                {
+                    AutoServiceScopes = true
+                });
+            });
+
+            // Resister the command handler
+            services.AddSingleton<CommandScanner>();
+            services.AddScoped<ICommandRegistrationService, CommandRegistrationService>();
+            services.AddScoped<CommandHandlerService>();
 
             // Reigster the message handler
             services.AddScoped<IMessageHandler, LogMessageHandler>();
