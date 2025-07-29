@@ -10,21 +10,21 @@ namespace DiscordBotAPI.Services
         /// <param name="userId"></param>
         /// <param name="consentType"></param>
         /// <returns></returns>
-        Task AddUserConsent(ulong userId, string consentType);
+        Task AddUserConsentAsync(ulong userId, string consentType);
         /// <summary>
         /// Checks if a user has given consent for a specific type.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="consentType"></param>
         /// <returns></returns>
-        Task<bool> HasUserConsented(ulong userId, string consentType);
+        Task<bool> HasUserConsentedAsync(ulong userId, string consentType);
         /// <summary>
         /// Removes a user's consent for a specific type.
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="consentType"></param>
         /// <returns></returns>
-        Task RemoveUserConsent(ulong userId, string consentType);
+        Task RemoveUserConsentAsync(ulong userId, string consentType);
     }
 
     /// <summary>
@@ -42,7 +42,7 @@ namespace DiscordBotAPI.Services
             _consents = LoadConsentList();
         }
 
-        public async Task AddUserConsent(ulong userId, string consentType)
+        public async Task AddUserConsentAsync(ulong userId, string consentType)
         {
             if (string.IsNullOrWhiteSpace(consentType))
             {
@@ -59,7 +59,7 @@ namespace DiscordBotAPI.Services
             }
         }
 
-        public Task<bool> HasUserConsented(ulong userId, string consentType)
+        public Task<bool> HasUserConsentedAsync(ulong userId, string consentType)
         {
             if (string.IsNullOrWhiteSpace(consentType))
             {
@@ -70,7 +70,7 @@ namespace DiscordBotAPI.Services
             return Task.FromResult(hasConsented);
         }
 
-        public Task RemoveUserConsent(ulong userId, string consentType)
+        public Task RemoveUserConsentAsync(ulong userId, string consentType)
         {
             if (string.IsNullOrWhiteSpace(consentType))
             {
@@ -98,8 +98,7 @@ namespace DiscordBotAPI.Services
         {
             if (_consents == null || !_consents.Any())
             {
-                _logger.LogWarning("No consents to save.");
-                return;
+                _logger.LogTrace("No consents to save.");
             }
             var json = JsonSerializer.Serialize(_consents);
             try
