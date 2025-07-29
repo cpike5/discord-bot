@@ -6,6 +6,9 @@ using Microsoft.Extensions.Options;
 
 namespace DiscordBotAPI.Services
 {
+    /// <summary>
+    /// Service for managing the Discord bot.
+    /// </summary>
     public class BotService : BackgroundService, IBotService
     {
         private readonly ILogger<BotService> _logger;
@@ -29,8 +32,29 @@ namespace DiscordBotAPI.Services
                 _logger.LogDebug("Initializing Discord bot service");
 
                 _logger.LogTrace("Registering event handlers for DiscordSocketClient");
+
                 // Register event handlers
-                _discordClient.Log += LogAsync;
+                _discordClient.Log += async (message) =>
+                {
+                    using (var scope = _services.CreateScope())
+                    {
+                        // Resolve the logger service from the scope
+                        var loggerService = scope.ServiceProvider.GetRequiredService<DiscordBotLoggerService>() ?? throw new MissingServiceException(nameof(DiscordBotLoggerService));
+                        await loggerService.LogAsync(message);
+                    }
+                };
+
+                _discordClient.MessageReceived += async (message) =>
+                {
+                    using (var scope = _services.CreateScope())
+                    {
+                        // Resolve the message handler service from the scope
+                        var messageHandler = scope.ServiceProvider.GetRequiredService<IMessageHandler>() ?? throw new MissingServiceException(nameof(IMessageHandler));
+                        await messageHandler.HandleMessageAsync(message);
+                    }
+                };
+
+                _discordClient.Ready += Client_Ready;
 
                 // Start the bot
                 _logger.LogInformation("Starting Discord bot service");
@@ -42,19 +66,10 @@ namespace DiscordBotAPI.Services
             }
         }
 
-        /// <summary>
-        /// Logs messages using the DiscordBotLoggerService.
-        /// </summary>
-        /// <param name="logMessage"></param>
-        /// <returns></returns>
-        public async Task LogAsync(LogMessage logMessage)
+        private async Task Client_Ready()
         {
-            using (var scope = _services.CreateScope())
-            {
-                // Resolve the logger service from the scope
-                var loggerService = scope.ServiceProvider.GetRequiredService<DiscordBotLoggerService>();
-                await loggerService.LogAsync(logMessage);
-            }
+            _logger.LogDebug("Client is ready and connected to Discord.");
+            await Task.CompletedTask;
         }
 
         /// <summary>

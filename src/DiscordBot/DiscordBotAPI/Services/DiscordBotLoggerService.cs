@@ -5,7 +5,7 @@ namespace DiscordBotAPI.Services
     /// <summary>
     /// Service for logging messages from Discord.NET to the configured logger.
     /// </summary>
-    public class DiscordBotLoggerService
+    public class DiscordBotLoggerService : IDiscordBotLoggerService
     {
         private readonly ILogger<DiscordBotLoggerService> _logger;
         public DiscordBotLoggerService(ILogger<DiscordBotLoggerService> logger)

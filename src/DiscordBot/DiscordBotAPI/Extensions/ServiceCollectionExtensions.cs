@@ -23,7 +23,8 @@ namespace DiscordBotAPI.Extensions
                 return new DiscordSocketClient(config);
             });
 
-            services.AddScoped<DiscordBotLoggerService>();
+            services.AddScoped<IDiscordBotLoggerService, DiscordBotLoggerService>();
+            services.AddScoped<IMessageHandler, LogMessageHandler>();
 
             // Register the bot service
             services.AddHostedService<BotService>();
