@@ -12,6 +12,18 @@ namespace DiscordBotAPI.Extensions
             // Configure the options
             services.Configure<BotOptions>(configuration.GetSection(BotOptions.SectionName));
 
+            // Register the core bot services
+            services.RegisterCoreBotServices();
+
+            // Register the consent services
+            services.RegisterConsentServices();
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterCoreBotServices(this IServiceCollection services)
+        {
+            // Register the command registration service
             // Register the Discord client
             services.AddSingleton<DiscordSocketClient>(provider =>
             {
@@ -24,12 +36,22 @@ namespace DiscordBotAPI.Extensions
                 return new DiscordSocketClient(config);
             });
 
-            services.AddScoped<IDiscordBotLoggerService, DiscordBotLoggerService>();
-            services.AddScoped<IMessageHandler, LogMessageHandler>();
-
             // Register the bot service
             services.AddHostedService<BotService>();
-            
+
+            // Register the logger
+            services.AddScoped<IDiscordBotLoggerService, DiscordBotLoggerService>();
+
+            // Reigster the message handler
+            services.AddScoped<IMessageHandler, LogMessageHandler>();
+
+            return services;
+        }
+
+        private static IServiceCollection RegisterConsentServices(this IServiceCollection services)
+        {
+            // Register the consent service
+            services.AddTransient<IConsentService, FileConsentService>();
             return services;
         }
     }
