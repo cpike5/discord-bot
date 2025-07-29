@@ -6,7 +6,6 @@ using Microsoft.Extensions.Options;
 
 namespace DiscordBotAPI.Services
 {
-
     public class BotService : BackgroundService, IBotService
     {
         private readonly ILogger<BotService> _logger;
@@ -25,15 +24,17 @@ namespace DiscordBotAPI.Services
             _botOptions = botOptions;
             _services = services;
 
-            var loggerServices = _services.GetRequiredService<DiscordBotLoggerService>() ?? throw new MissingServiceException(nameof(DiscordBotLoggerService));
-
-            // Register event handlers
-            _discordClient.Log += LogAsync;
-
             try
             {
                 _logger.LogDebug("Initializing Discord bot service");
 
+                _logger.LogTrace("Registering event handlers for DiscordSocketClient");
+                // Register event handlers
+                _discordClient.Log += LogAsync;
+
+                // Start the bot
+                _logger.LogInformation("Starting Discord bot service");
+                Task.Run(StartBotAsync);
             }
             catch (Exception ex)
             {
@@ -93,6 +94,16 @@ namespace DiscordBotAPI.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(1000, stoppingToken);
+            }
+        }
+
+        ~BotService()
+        {
+            // Ensure the bot is stopped when the service is disposed
+            if (_discordClient.ConnectionState == ConnectionState.Connected)
+            {
+                _logger.LogInformation("Disposing BotService and stopping Discord client.");
+                _discordClient.StopAsync().GetAwaiter().GetResult();
             }
         }
     }
