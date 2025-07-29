@@ -31,30 +31,8 @@ namespace DiscordBotAPI.Services
             {
                 _logger.LogDebug("Initializing Discord bot service");
 
-                _logger.LogTrace("Registering event handlers for DiscordSocketClient");
-
                 // Register event handlers
-                _discordClient.Log += async (message) =>
-                {
-                    using (var scope = _services.CreateScope())
-                    {
-                        // Resolve the logger service from the scope
-                        var loggerService = scope.ServiceProvider.GetRequiredService<DiscordBotLoggerService>() ?? throw new MissingServiceException(nameof(DiscordBotLoggerService));
-                        await loggerService.LogAsync(message);
-                    }
-                };
-
-                _discordClient.MessageReceived += async (message) =>
-                {
-                    using (var scope = _services.CreateScope())
-                    {
-                        // Resolve the message handler service from the scope
-                        var messageHandler = scope.ServiceProvider.GetRequiredService<IMessageHandler>() ?? throw new MissingServiceException(nameof(IMessageHandler));
-                        await messageHandler.HandleMessageAsync(message);
-                    }
-                };
-
-                _discordClient.Ready += Client_Ready;
+                RegisterEventHandlers();
 
                 // Start the bot
                 _logger.LogInformation("Starting Discord bot service");
@@ -64,6 +42,36 @@ namespace DiscordBotAPI.Services
             {
                 _logger.LogError(ex, "An error occurred while initializing the Discord bot service.");
             }
+        }
+
+        /// <summary>
+        /// Registers event handlers for the DiscordSocketClient.
+        /// </summary>
+        /// <exception cref="MissingServiceException"></exception>
+        private void RegisterEventHandlers()
+        {
+            _logger.LogTrace("Registering event handlers for DiscordSocketClient");
+
+            // Register the logging event handler
+            _discordClient.Log += async (message) =>
+            {
+                using var scope = _services.CreateScope();
+                // Resolve the logger service from the scope
+                var loggerService = scope.ServiceProvider.GetRequiredService<DiscordBotLoggerService>() ?? throw new MissingServiceException(nameof(DiscordBotLoggerService));
+                await loggerService.LogAsync(message);
+            };
+
+            // Register the message received event handler
+            _discordClient.MessageReceived += async (message) =>
+            {
+                using var scope = _services.CreateScope();
+                // Resolve the message handler service from the scope
+                var messageHandler = scope.ServiceProvider.GetRequiredService<IMessageHandler>() ?? throw new MissingServiceException(nameof(IMessageHandler));
+                await messageHandler.HandleMessageAsync(message);
+            };
+
+            // Register the ready event handler
+            _discordClient.Ready += Client_Ready;
         }
 
         private async Task Client_Ready()

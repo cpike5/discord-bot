@@ -18,7 +18,8 @@ namespace DiscordBotAPI.Extensions
                 var config = new DiscordSocketConfig
                 {
                     LogLevel = LogSeverity.Info,
-                    MessageCacheSize = 1000
+                    MessageCacheSize = 1000,
+                    GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.DirectMessages | GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.MessageContent
                 };
                 return new DiscordSocketClient(config);
             });

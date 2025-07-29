@@ -13,7 +13,7 @@ namespace DiscordBotAPI.Services
         public Task HandleMessageAsync(SocketMessage message)
         {
             // Log the message content
-            _logger.LogInformation("Received message: {MessageContent}", message.Content);
+            _logger.LogInformation("Received message from user {User}: {MessageContent}", message.Author.Username, message.Content);
             return Task.CompletedTask;
         }
     }
