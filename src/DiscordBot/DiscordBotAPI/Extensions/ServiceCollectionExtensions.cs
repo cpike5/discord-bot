@@ -26,7 +26,7 @@ namespace DiscordBotAPI.Extensions
             services.AddScoped<DiscordBotLoggerService>();
 
             // Register the bot service
-            services.AddSingleton<IBotService, BotService>();
+            services.AddHostedService<BotService>();
             
             return services;
         }
